@@ -3,9 +3,6 @@ from googleapiclient.discovery import build
 import pandas as pd
 import os
 
-# Load the environment variables
-load_dotenv()
-
 # Get the secret key from the loaded environment variables
 secret_key = st.secrets["SECRET_KEY"]
 
