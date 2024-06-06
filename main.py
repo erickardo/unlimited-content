@@ -2,7 +2,6 @@ import streamlit as st
 from googleapiclient.discovery import build
 import pandas as pd
 import os
-from dotenv import load_dotenv
 
 # Load the environment variables
 load_dotenv()
