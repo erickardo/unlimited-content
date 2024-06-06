@@ -2,6 +2,7 @@ import streamlit as st
 from googleapiclient.discovery import build
 import pandas as pd
 import os
+import time
 
 # Get the secret key from the loaded environment variables
 secret_key = st.secrets["SECRET_KEY"]
@@ -37,25 +38,32 @@ if google_api_key and secret_key == secret_key_match:
             q=search_term
         )
         response = request.execute()
+        # Wait for the response
+        with st.spinner("Buscando contenido..."):
+            time.sleep(5)
+
         # Check if the response has items
-        if "items" in response:
-            items = response["items"]
-            table_data = []
-            for item in items:
-                thumbnail = item["snippet"]["thumbnails"]["high"]["url"]
-                title = item["snippet"]["title"]
-                video_id = item["id"]["videoId"]
-                # Get the comments for the video
-                comments_request = youtube.commentThreads().list(
-                    part="snippet",
-                    videoId=video_id,
-                    maxResults=40
-                )
-                comments_response = comments_request.execute()
-                comments = [comment["snippet"]["topLevelComment"]["snippet"]["textDisplay"] for comment in comments_response["items"] if "?" in comment["snippet"]["topLevelComment"]["snippet"]["textDisplay"]]
-                table_data.append([thumbnail, title, comments])
-        else:
-            st.warning("No se encontraron resultados")
+        try:
+            if "items" in response:
+                items = response["items"]
+                table_data = []
+                for item in items:
+                    thumbnail = item["snippet"]["thumbnails"]["high"]["url"]
+                    title = item["snippet"]["title"]
+                    video_id = item["id"]["videoId"]
+                    # Get the comments for the video
+                    comments_request = youtube.commentThreads().list(
+                        part="snippet",
+                        videoId=video_id,
+                        maxResults=40
+                    )
+                    comments_response = comments_request.execute()
+                    comments = [comment["snippet"]["topLevelComment"]["snippet"]["textDisplay"] for comment in comments_response["items"] if "?" in comment["snippet"]["topLevelComment"]["snippet"]["textDisplay"]]
+                    table_data.append([thumbnail, title, comments])
+            else:
+                st.warning("No se encontraron resultados")
+        except Exception as e:
+            st.error(f"Ocurrió algún error con alguno de los videos. Los siguientes son los únicos que se pudieron obtener:")
         
         # Create a pandas DataFrame
         df = pd.DataFrame(table_data, columns=["Thumbnail", "Title", "Comments"])
