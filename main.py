@@ -48,18 +48,21 @@ if google_api_key and secret_key == secret_key_match:
                 items = response["items"]
                 table_data = []
                 for item in items:
-                    thumbnail = item["snippet"]["thumbnails"]["high"]["url"]
-                    title = item["snippet"]["title"]
-                    video_id = item["id"]["videoId"]
-                    # Get the comments for the video
-                    comments_request = youtube.commentThreads().list(
-                        part="snippet",
-                        videoId=video_id,
-                        maxResults=40
-                    )
-                    comments_response = comments_request.execute()
-                    comments = [comment["snippet"]["topLevelComment"]["snippet"]["textDisplay"] for comment in comments_response["items"] if "?" in comment["snippet"]["topLevelComment"]["snippet"]["textDisplay"]]
-                    table_data.append([thumbnail, title, comments])
+                    try:
+                        thumbnail = item["snippet"]["thumbnails"]["high"]["url"]
+                        title = item["snippet"]["title"]
+                        video_id = item["id"]["videoId"]
+                        # Get the comments for the video
+                        comments_request = youtube.commentThreads().list(
+                            part="snippet",
+                            videoId=video_id,
+                            maxResults=40
+                        )
+                        comments_response = comments_request.execute()
+                        comments = [comment["snippet"]["topLevelComment"]["snippet"]["textDisplay"] for comment in comments_response["items"] if "?" in comment["snippet"]["topLevelComment"]["snippet"]["textDisplay"]]
+                        table_data.append([thumbnail, title, comments])
+                    except Exception as e:
+                        pass
             else:
                 st.warning("No se encontraron resultados")
         except Exception as e:
