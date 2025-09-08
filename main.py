@@ -117,6 +117,28 @@ else:
         if not results:
             st.info("Búsqueda completada. No se encontraron videos con comentarios que contengan preguntas.")
         else:
+            # --- ADDITION: Prepare data and add a download button for CSV ---
+            # We flatten the results to create a list of dictionaries suitable for a CSV.
+            csv_data = []
+            for result in results:
+                for comment in result['comments']:
+                    csv_data.append({
+                        "Video Title": result['title'],
+                        "Question in Comment": comment
+                    })
+            
+            if csv_data:
+                df_download = pd.DataFrame(csv_data)
+                # Convert DataFrame to CSV string for the download button
+                csv = df_download.to_csv(index=False).encode('utf-8')
+
+                st.download_button(
+                   label="Descargar preguntas como CSV",
+                   data=csv,
+                   file_name=f'preguntas_{search_term.replace(" ", "_")}.csv',
+                   mime='text/csv',
+                )
+
             # --- 3. UI IMPROVEMENT: Card Layout ---
             # Instead of a dense table, we display each result in a visually
             # separate "card". This is cleaner and easier to read, especially
@@ -125,7 +147,10 @@ else:
                 with st.container(border=True):
                     col1, col2 = st.columns([1, 4])
                     with col1:
-                        st.image(result["thumbnail"], use_column_width=True)
+                        # --- FIX: Deprecation Warning ---
+                        # Changed `use_column_width` to `use_container_width` to align with
+                        # recent Streamlit updates and remove the warning.
+                        st.image(result["thumbnail"], use_container_width=True)
                     with col2:
                         st.subheader(result["title"])
                         # An expander keeps the UI clean by hiding long lists of comments
